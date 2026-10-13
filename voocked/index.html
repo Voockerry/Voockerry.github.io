@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>VoockED Prototype</title>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Layout: test console — moderator panel on the left, a phone with the app on the right; stacks on narrow screens */
+:root{
+  --bg:#eef0f4; --panel:#ffffff; --ink:#1b1e2b; --muted:#5d6377; --line:#d9dce5;
+  --brand:#3b4de0; --brand-ink:#ffffff; --brand-soft:#e6e9ff;
+  --ok:#1f8a4c; --ok-soft:#e1f4e8; --bad:#c23a3a; --bad-soft:#fbe5e5; --warn:#a86a00; --warn-soft:#fff1d6;
+  --phone:#0f1220; --screen:#f7f8fb; --card:#ffffff;
+  --display:"Unbounded", "Golos Text", system-ui, sans-serif;
+  --body:"Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141c; --panel:#1b1e2a; --ink:#eceef6; --muted:#a3a8bb; --line:#2c3042;
+  --brand:#7d8bff; --brand-ink:#0d1030; --brand-soft:#262b52;
+  --ok:#4cc985; --ok-soft:#173726; --bad:#ff7d7d; --bad-soft:#3d1c1c; --warn:#f2b24a; --warn-soft:#3a2c12;
+  --phone:#05060b; --screen:#171a24; --card:#212535; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141c; --panel:#1b1e2a; --ink:#eceef6; --muted:#a3a8bb; --line:#2c3042;
+  --brand:#7d8bff; --brand-ink:#0d1030; --brand-soft:#262b52;
+  --ok:#4cc985; --ok-soft:#173726; --bad:#ff7d7d; --bad-soft:#3d1c1c; --warn:#f2b24a; --warn-soft:#3a2c12;
+  --phone:#05060b; --screen:#171a24; --card:#212535; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.phone-col{order:-1}}
+h1{font-family:var(--display);font-size:22px;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.panel h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+label{font-size:13px;color:var(--muted)}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--screen);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+textarea{width:100%;min-height:60px}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.btn:focus-visible,.a:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.on{background:var(--brand-soft);border-color:var(--brand)}
+.tasks{display:grid;gap:8px}
+.task{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px}
+.task p{margin:0}
+.task .t{font-weight:600}
+.status{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--brand-soft);color:var(--ink)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.log{font-size:12px;color:var(--muted);max-height:140px;overflow:auto;border-top:1px solid var(--line);padding-top:8px;font-variant-numeric:tabular-nums}
+/* phone */
+.phone-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.phone{width:100%;max-width:360px;aspect-ratio:9/18.5;margin:0 auto;background:var(--phone);border-radius:42px;padding:12px;box-shadow:0 18px 40px rgba(10,14,40,.25)}
+.screen{position:relative;height:100%;border-radius:32px;overflow:hidden;background:var(--screen);display:flex;flex-direction:column}
+.sbar{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:10px 20px 4px;color:var(--ink)}
+.view{flex:1;overflow:auto;padding:12px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.view h3{font-family:var(--display);font-size:19px;line-height:1.25;margin:4px 0 0;text-wrap:balance}
+.view p{margin:0;color:var(--muted)}
+.a{font:inherit;font-weight:600;border:0;border-radius:14px;padding:13px 14px;background:var(--brand);color:var(--brand-ink);cursor:pointer;text-align:center}
+.a.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+.a.soft{background:var(--brand-soft);color:var(--ink)}
+.spacer{flex:1}
+.logo{font-family:var(--display);font-weight:700;font-size:15px;color:var(--brand)}
+.dots{display:flex;gap:6px;justify-content:center}.dots i{width:7px;height:7px;border-radius:9px;background:var(--line)}.dots i.on{background:var(--brand)}
+.steps{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;background:var(--card);border-radius:12px;padding:10px}
+.step b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 12px;cursor:pointer}
+.chip.sel{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.card{background:var(--card);border-radius:14px;padding:12px;display:grid;gap:6px}
+.kv{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+.big{font-family:var(--display);font-size:28px;color:var(--ink)}
+.bar{height:8px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--brand)}
+.toggle{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:10px 12px}
+.sw{width:42px;height:24px;border-radius:20px;background:var(--line);position:relative;border:0;cursor:pointer}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.sw.on{background:var(--brand)}.sw.on::after{left:21px}
+.feed{flex:1;display:flex;flex-direction:column;gap:0;background:#111;color:#fff;margin:-12px -18px -18px;overflow:hidden;position:relative}
+.vid{flex:1;display:grid;place-items:center;font-family:var(--display);font-size:20px;color:rgba(255,255,255,.9);background:linear-gradient(160deg,#ff6a3d,#7a3cff)}
+.vid.v2{background:linear-gradient(160deg,#00a6a6,#1f3fff)}
+.vidcap{position:absolute;left:14px;bottom:14px;right:60px;font-size:13px;color:#fff}
+.overlay{position:absolute;inset:0;background:var(--screen);display:flex;flex-direction:column;padding:16px 18px 18px;gap:10px;overflow:auto}
+.q{background:var(--card);border-radius:14px;padding:12px;font-weight:600;color:var(--ink)}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:11px 12px;cursor:pointer}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)} .opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.tag{font-size:12px;font-weight:600;color:var(--brand)}
+.attempts{display:flex;gap:6px}.attempts i{width:22px;height:6px;border-radius:6px;background:var(--line)}.attempts i.used{background:var(--bad)}
+.note{font-size:13px;border-radius:12px;padding:10px 12px;background:var(--warn-soft);color:var(--ink)}
+.okbox{border-radius:12px;padding:12px;background:var(--ok-soft);color:var(--ink)}
+.tab{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:8px 0 12px;background:var(--card)}
+.tab button{font:inherit;font-size:12px;border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 8px}
+.tab button.cur{color:var(--brand);font-weight:700}
+.topic{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;background:var(--card);border-radius:12px;padding:10px 12px}
+.st{font-size:12px;font-weight:600;border-radius:99px;padding:2px 8px}
+.st.g{background:var(--ok-soft);color:var(--ok)} .st.y{background:var(--warn-soft);color:var(--warn)} .st.n{background:var(--line);color:var(--muted)}
+.close{position:absolute;top:10px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:var(--line);color:var(--muted);font-size:16px;cursor:pointer}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="panel" id="mod">
+    <div>
+      <h1>VoockED: usability-тест</h1>
+      <p class="sub">Клікабельний прототип мобільного застосунку для підготовки до НМТ. Ліворуч панель модератора, праворуч сам прототип. Усі дії учасника записуються для аналізу.</p>
+    </div>
+    <h2>1. Учасник</h2>
+    <div class="row">
+      <label for="pcode">Код учасника</label>
+      <input type="text" id="pcode" placeholder="напр. U1" size="6">
+      <label for="pprof">Профіль</label>
+      <select id="pprof"><option value="11">11 клас</option><option value="10">10 клас</option><option value="grad">Випускник</option><option value="other">Інше</option></select>
+      <button class="btn primary" id="startBtn">Почати сесію</button>
+    </div>
+    <div class="status" id="sessStatus">Сесію не розпочато. Запис подій: <span id="dbState">перевірка…</span></div>
+    <h2>2. Сценарні завдання</h2>
+    <p class="status" style="margin:0">Прочитайте завдання вголос, натисніть «Старт» і не підказуйте. Попросіть учасника думати вголос. Коли учасник закінчив або здався, натисніть «Виконано» чи «Не впорався».</p>
+    <div class="tasks" id="tasks"></div>
+    <h2>3. Після тесту</h2>
+    <div class="row">
+      <label for="accept">Наскільки ймовірно, що увімкнеш такі переривання? (1–5)</label>
+      <select id="accept"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    </div>
+    <div class="row">
+      <label for="wtp">Скільки готовий платити на місяць?</label>
+      <select id="wtp"><option></option><option>0 грн</option><option>1–49 грн</option><option>50–99 грн</option><option>100+ грн</option></select>
+    </div>
+    <label for="quote">Найважливіша цитата учасника</label>
+    <textarea id="quote"></textarea>
+    <div class="row"><button class="btn primary" id="finishBtn">Завершити сесію</button></div>
+    <div class="log" id="log" aria-live="polite"></div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone"><div class="screen" id="screen">
+      <div class="sbar"><span>9:41</span><span>5G ▮▮▮</span></div>
+      <div class="view" id="view"></div>
+      <div class="tab" id="tabbar" hidden>
+        <button data-a="go:home" id="tb-home">Головна</button>
+        <button data-a="go:progress" id="tb-progress">Прогрес</button>
+        <button data-a="go:settings" id="tb-settings">Налаштування</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const TASKS=[
+ {id:"T1",t:"Налаштування",txt:"«Ти щойно встановив VoockED. Налаштуй застосунок так, щоб у TikTok через 15 хвилин з’являлося завдання з математики з тем, які ти вже пройшов.»",end:"home"},
+ {id:"T2",t:"Ключова дія",txt:"«Ти гортаєш стрічку, і з’явилося завдання. Розв’яжи його та повернися до навчання.»",end:"done"},
+ {id:"T3",t:"Терміновий дзвінок",txt:"«Посеред завдання тобі терміново треба подзвонити мамі. Що зробиш?»",end:"call"},
+ {id:"T4",t:"Прогрес і налаштування",txt:"«Знайди, скільки завдань ти розв’язав цього тижня і яку тему варто повторити. Потім зміни інтервал на 30 хвилин.»",end:"interval30"}
+];
+const QS={
+ q1:{topic:"Відсотки",q:"Навушники коштують 800 грн. Знижка 15%. Скільки вони коштують зі знижкою?",o:["785 грн","680 грн","120 грн","720 грн"],r:1,ex:"800 × (1 − 0,15) = 800 × 0,85 = 680 грн."},
+ q2:{topic:"Лінійні рівняння",q:"Розв’яжи рівняння 3x − 7 = 11.",o:["x = 4/3","x = 18","x = 6","x = 3"],r:2,ex:"3x = 11 + 7 = 18, отже x = 18 : 3 = 6."},
+ easy:{topic:"Відсотки · легше",q:"Знайди 10% від 250.",o:["2,5","25","250","10"],r:1,ex:"10% — це десята частина: 250 : 10 = 25."}
+};
+let S={screen:"onb1",p:"",prof:"11",sess:null,subjects:["Математика"],topics:["Відсотки","Лінійні рівняння"],apps:["TikTok"],interval:15,quiet:true,calls:true,q:"q1",attempts:0,answered:null,solved:21,curTask:null,taskStart:0};
+const view=document.getElementById("view"),screenEl=document.getElementById("screen"),tabbar=document.getElementById("tabbar"),logEl=document.getElementById("log");
+let db=null,queue=[];
+(async()=>{try{db=window.claude?.use?await window.claude.use("db"):null;}catch(e){db=null}
+ document.getElementById("dbState").textContent=db?"увімкнено":"вимкнено (демо-версія; дані тесту 13.10.2026 збережено окремо)";
+ if(db){for(const e of queue){try{await db.collection("events").add(e)}catch(_){}} queue=[]}})();
+setTimeout(()=>{if(document.getElementById("dbState").textContent==="перевірка…")document.getElementById("dbState").textContent="вимкнено (демо-версія)";},11000);
+function log(type,detail){
+  const e={p:S.p||"-",prof:S.prof,sess:S.sess||"-",ts:Date.now(),type,screen:S.screen,detail:detail||{}};
+  if(db){db.collection("events").add(e).catch(()=>{})}else queue.push(e);
+  const d=document.createElement("div");d.textContent=new Date(e.ts).toLocaleTimeString("uk-UA")+" · "+type+" · "+S.screen+(detail&&detail.label?" · "+detail.label:"");logEl.prepend(d);
+}
+function go(s){S.screen=s;render();log("screen_view");checkTaskEnd(s)}
+function checkTaskEnd(marker){if(S.curTask&&TASKS.find(t=>t.id===S.curTask).end===marker){finishTask("auto_success")}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function chips(list,sel,act){return '<div class="chips">'+list.map(x=>`<button class="chip ${sel.includes(x)?"sel":""}" data-a="${act}:${esc(x)}">${esc(x)}</button>`).join("")+'</div>'}
+const R={
+ onb1:()=>`<div class="logo">VoockED</div><div class="spacer"></div><h3>Перетвори стрічку на підготовку до НМТ</h3><p>Коли засидишся в соцмережах, VoockED покаже одне коротке завдання з теми, яку ти вже пройшов.</p><div class="spacer"></div><div class="dots"><i class="on"></i><i></i><i></i></div><button class="a" data-a="go:onb2">Далі</button>`,
+ onb2:()=>`<div class="logo">VoockED</div><h3>Як це працює</h3><div class="steps"><div class="step"><b>1</b><div>Обираєш предмет і теми, які вже вивчив.</div></div><div class="step"><b>2</b><div>Обираєш застосунки та через скільки хвилин показати завдання.</div></div><div class="step"><b>3</b><div>Розв’язуєш завдання за 1–2 хвилини і бачиш пояснення.</div></div><div class="step"><b>4</b><div>Після 3 помилок — 5 хвилин паузи й легше завдання.</div></div></div><div class="spacer"></div><div class="dots"><i></i><i class="on"></i><i></i></div><button class="a" data-a="go:login">Почати</button>`,
+ login:()=>`<div class="logo">VoockED</div><h3>Збережемо твій прогрес</h3><p>Увійди, щоб прогрес не загубився при зміні телефона.</p><div class="spacer"></div><button class="a soft" data-a="go:subjects">Продовжити з Google</button><button class="a soft" data-a="go:subjects">Увійти за номером телефону</button><button class="a ghost" data-a="go:subjects">Пропустити</button><div class="dots"><i></i><i></i><i class="on"></i></div>`,
+ subjects:()=>`<h3>Що ти вже пройшов?</h3><p>Завдання будуть лише з позначених тем.</p><div class="tag">Предмет</div>${chips(["Математика","Українська мова","Історія України"],S.subjects,"subj")}<div class="tag">Теми з математики</div>${chips(["Відсотки","Лінійні рівняння","Степені","Квадратні рівняння","Функції","Планіметрія"],S.topics,"topic")}<div class="spacer"></div><button class="a" data-a="go:apps">Далі</button>`,
+ apps:()=>`<h3>Де нагадати про підготовку?</h3><p>Обери застосунки й час, після якого з’явиться завдання.</p>${chips(["TikTok","Instagram","YouTube","Ігри"],S.apps,"app")}<div class="card"><div class="kv"><span>Показувати завдання через</span><b id="ivl">${S.interval} хв</b></div><div class="chips">${[5,10,15,30,60].map(n=>`<button class="chip ${S.interval===n?"sel":""}" data-a="ivl:${n}">${n} хв</button>`).join("")}</div></div><div class="toggle"><span>Тихі години 22:00–8:00</span><button class="sw ${S.quiet?"on":""}" data-a="tog:quiet" aria-label="Тихі години"></button></div><div class="toggle"><span>Дзвінки завжди доступні</span><button class="sw ${S.calls?"on":""}" data-a="tog:calls" aria-label="Дзвінки"></button></div><div class="spacer"></div><button class="a" data-a="go:perm">Далі</button>`,
+ perm:()=>`<h3>Потрібен один дозвіл</h3><p>Щоб показати завдання поверх стрічки, VoockED має бачити, який застосунок відкритий. Ми не читаємо повідомлення і не бачимо, що ти дивишся.</p><div class="card"><b>Доступ до використання застосунків</b><p>Android → Налаштування → Доступ до даних використання</p></div><div class="spacer"></div><button class="a" data-a="go:home">Дозволити</button><button class="a ghost" data-a="go:home">Пізніше</button>`,
+ home:()=>`<div class="kv"><div class="logo">VoockED</div><span class="pill">🔥 4 дні поспіль</span></div><div class="card"><span class="tag">Сьогодні</span><div class="kv"><span>Розв’язано завдань</span><b>${S.solved-17}</b></div><div class="bar"><i style="width:${Math.min(100,(S.solved-17)*12)}%"></i></div><p>Ціль на день — 8 завдань.</p></div><div class="card"><span class="tag">Налаштування</span><div class="kv"><span>${esc(S.apps.join(", ")||"—")}</span><b>кожні ${S.interval} хв</b></div><p>Теми: ${esc(S.topics.join(", ")||"не обрано")}</p></div><div class="spacer"></div><button class="a soft" data-a="go:feed">▶ Відкрити стрічку (демо)</button>`,
+ feed:()=>`<div class="feed"><div class="vid">Відео 1</div><div class="vid v2">Відео 2</div><div class="vidcap">@creator · гортаєш уже 15 хв</div></div>`,
+ quiz:()=>{const q=QS[S.q];return `<div class="overlay"><button class="close" data-a="tryclose" aria-label="Закрити">✕</button><div class="tag">Пауза від стрічки · ${esc(q.topic)}</div><div class="attempts">${[0,1,2].map(i=>`<i class="${i<S.attempts?"used":""}"></i>`).join("")}</div><div class="q">${esc(q.q)}</div><div class="opts">${q.o.map((o,i)=>`<button class="opt ${S.answered!==null&&i===q.r&&S.answered===q.r?"right":""} ${S.answered===i&&i!==q.r?"wrong":""}" data-a="ans:${i}">${esc(o)}</button>`).join("")}</div>${S.answered!==null&&S.answered!==q.r?`<div class="note">Неправильно. Спроба ${S.attempts} з 3. Спробуй ще.</div>`:""}<div class="spacer"></div><button class="a ghost" data-a="go:emergency">📞 Терміновий дзвінок</button></div>`},
+ correct:()=>{const q=QS[S.q];return `<div class="okbox"><b>Правильно!</b> ${esc(q.ex)}</div><div class="card"><div class="kv"><span>Сьогодні розв’язано</span><b>${S.solved-17}</b></div><div class="kv"><span>Тема «${esc(q.topic)}»</span><span class="st g">засвоюється</span></div></div><p>Можеш повернутися до стрічки або ще трохи потренуватися.</p><div class="spacer"></div><button class="a" data-a="done">Продовжити навчання</button><button class="a ghost" data-a="backfeed">Повернутися до стрічки</button>`},
+ pause:()=>`<h3>5 хвилин паузи</h3><p>Три помилки поспіль. Відпочинь, а потім спробуй легше завдання з цієї ж теми.</p><div class="card"><div class="big">4:59</div><p>Пояснення попередньої задачі: ${esc(QS[S.q].ex)}</p></div><div class="spacer"></div><button class="a" data-a="easy">Легше завдання (демо: пропустити очікування)</button><button class="a ghost" data-a="go:emergency">📞 Терміновий дзвінок</button>`,
+ emergency:()=>`<h3>Терміновий зв’язок</h3><p>Дзвінки й повідомлення доступні завжди, завдання почекає.</p><div class="opts"><button class="opt" data-a="call:Мама">📞 Мама</button><button class="opt" data-a="call:Тато">📞 Тато</button><button class="opt" data-a="call:112">📞 112</button></div><div class="spacer"></div><button class="a ghost" data-a="go:quiz">Повернутися до завдання</button>`,
+ calling:()=>`<div class="spacer"></div><h3 style="text-align:center">Дзвінок…</h3><p style="text-align:center">Демонстрація: тут відкриється звичайний дзвінок.</p><div class="spacer"></div><button class="a" data-a="go:quiz">Завершити дзвінок</button>`,
+ done:()=>`<div class="okbox"><b>Повертаємось до підготовки!</b> Стрічку поставлено на паузу на 30 хвилин.</div><div class="card"><span class="tag">Наступне</span><p>Серія з 5 завдань «Відсотки» — приблизно 6 хвилин.</p></div><div class="spacer"></div><button class="a" data-a="go:home">На головну</button>`,
+ progress:()=>`<h3>Прогрес за тиждень</h3><div class="card"><div class="kv"><span>Розв’язано завдань</span><b class="big">${S.solved+20}</b></div><p>З них ${S.solved+3} — замість стрічки.</p></div><div class="topic"><span>Відсотки</span><span class="st g">засвоєно</span></div><div class="topic"><span>Лінійні рівняння</span><span class="st y">повторити</span></div><div class="topic"><span>Степені</span><span class="st n">не почато</span></div><button class="a soft" data-a="plus">✨ Детальна аналітика · VoockED Plus</button>`,
+ settings:()=>`<h3>Налаштування</h3><div class="card"><div class="kv"><span>Інтервал</span><b>${S.interval} хв</b></div><div class="chips">${[5,10,15,30,60].map(n=>`<button class="chip ${S.interval===n?"sel":""}" data-a="ivl:${n}">${n} хв</button>`).join("")}</div></div><div class="toggle"><span>Тихі години 22:00–8:00</span><button class="sw ${S.quiet?"on":""}" data-a="tog:quiet" aria-label="Тихі години"></button></div><div class="toggle"><span>Дзвінки завжди доступні</span><button class="sw ${S.calls?"on":""}" data-a="tog:calls" aria-label="Дзвінки"></button></div><div class="card"><div class="kv"><span>Тариф</span><b>Безкоштовний</b></div><button class="a soft" data-a="plus">VoockED Plus — 99 грн/міс</button></div>`,
+ plus:()=>`<h3>VoockED Plus скоро</h3><p>Детальна аналітика за темами та прогноз готовності ще в розробці. Хочеш, щоб ми повідомили про запуск?</p><div class="spacer"></div><button class="a" data-a="plusyes">Так, повідомте мене</button><button class="a ghost" data-a="go:progress">Ні, дякую</button>`,
+ thanks:()=>`<div class="okbox">Дякуємо! Повідомимо про запуск Plus.</div><button class="a ghost" data-a="go:home">На головну</button>`
+};
+function render(){
+  view.innerHTML=R[S.screen]();
+  const tabbed=["home","progress","settings"].includes(S.screen);
+  tabbar.hidden=!tabbed;
+  ["home","progress","settings"].forEach(k=>document.getElementById("tb-"+k).classList.toggle("cur",S.screen===k));
+  if(S.screen==="feed"){clearTimeout(window.__ft);window.__ft=setTimeout(()=>{if(S.screen==="feed"){S.answered=null;S.attempts=0;log("interrupt_shown",{q:S.q});S.screen="quiz";render();log("screen_view")}},2500)}
+}
+function toggleIn(arr,v){const i=arr.indexOf(v);i>=0?arr.splice(i,1):arr.push(v)}
+screenEl.addEventListener("click",ev=>{
+  const r=screenEl.getBoundingClientRect();const el=ev.target.closest("[data-a]");
+  log("click",{x:+((ev.clientX-r.left)/r.width).toFixed(3),y:+((ev.clientY-r.top)/r.height).toFixed(3),hit:!!el,label:el?el.dataset.a:""});
+  if(!el)return;const [k,v]=el.dataset.a.split(/:(.*)/s);
+  switch(k){
+   case "go":go(v);break;
+   case "subj":toggleIn(S.subjects,v);render();break;
+   case "topic":toggleIn(S.topics,v);render();break;
+   case "app":toggleIn(S.apps,v);render();break;
+   case "ivl":S.interval=+v;log("set_interval",{v:+v});render();if(+v===30)checkTaskEnd("interval30");break;
+   case "tog":S[v]=!S[v];log("toggle",{k:v,v:S[v]});render();break;
+   case "ans":{const q=QS[S.q],i=+v;S.answered=i;const ok=i===q.r;log("answer",{q:S.q,choice:i,correct:ok,attempt:S.attempts+1});
+     if(ok){S.solved++;S.attempts=0;S.screen="correct";render();log("screen_view")}
+     else{S.attempts++;if(S.attempts>=3){S.screen="pause";render();log("screen_view")}else render()}break;}
+   case "easy":S.q="easy";S.attempts=0;S.answered=null;S.screen="quiz";render();log("screen_view");break;
+   case "tryclose":log("try_close_task");el.animate&&el.animate([{transform:"translateX(0)"},{transform:"translateX(-4px)"},{transform:"translateX(4px)"},{transform:"translateX(0)"}],{duration:200});break;
+   case "call":log("emergency_call",{to:v});S.screen="calling";render();log("screen_view");checkTaskEnd("call");break;
+   case "done":S.q=S.q==="q1"?"q2":"q1";go("done");break;
+   case "backfeed":S.q=S.q==="q1"?"q2":"q1";log("back_to_feed");go("feed");break;
+   case "plus":log("plus_click");go("plus");break;
+   case "plusyes":log("plus_waitlist");go("thanks");break;
+  }
+});
+// moderator
+const tasksEl=document.getElementById("tasks");
+function drawTasks(){tasksEl.innerHTML=TASKS.map(t=>`<div class="task" id="task-${t.id}"><div class="row"><span class="t">${t.id}. ${t.t}</span><span class="pill" id="tp-${t.id}">не розпочато</span></div><p>${t.txt}</p><div class="row"><button class="btn" data-t="start:${t.id}">Старт</button><button class="btn" data-t="ok:${t.id}">Виконано</button><button class="btn" data-t="fail:${t.id}">Не впорався</button></div></div>`).join("")}
+drawTasks();
+function finishTask(result){const id=S.curTask;if(!id)return;const sec=Math.round((Date.now()-S.taskStart)/1000);log("task_end",{task:id,result,sec,apps:S.apps.slice(),topics:S.topics.slice(),interval:S.interval,label:id+" "+result});const p=document.getElementById("tp-"+id);p.textContent=(result==="fail"?"не впорався":"виконано")+" · "+sec+" с";p.className="pill "+(result==="fail"?"bad":"ok");S.curTask=null}
+tasksEl.addEventListener("click",ev=>{const b=ev.target.closest("[data-t]");if(!b)return;const [k,id]=b.dataset.t.split(":");
+ if(k==="start"){if(S.curTask)finishTask("abandoned");
+   if(id==="T1"){S.screen="onb1";S.subjects=[];S.topics=[];S.apps=[];S.interval=10}
+   if(id==="T2"){S.screen="feed";S.q="q1"}
+   if(id==="T3"){S.q="q2";S.attempts=0;S.answered=null;S.screen="quiz"}
+   if(id==="T4"){S.screen="home";S.interval=15}
+   S.curTask=id;S.taskStart=Date.now();log("task_start",{task:id,label:id});document.getElementById("tp-"+id).textContent="триває";document.getElementById("tp-"+id).className="pill";render();log("screen_view")}
+ else finishTask(k==="ok"?"success":"fail")});
+document.getElementById("startBtn").addEventListener("click",()=>{S.p=document.getElementById("pcode").value.trim()||"U?";S.prof=document.getElementById("pprof").value;S.sess=S.p+"-"+Date.now().toString(36);S.screen="onb1";S.subjects=["Математика"];S.topics=["Відсотки","Лінійні рівняння"];S.apps=["TikTok"];S.interval=15;S.solved=21;drawTasks();render();log("session_start",{label:S.p});document.getElementById("sessStatus").firstChild.textContent="Сесія "+S.p+" триває. Запис подій: "});
+document.getElementById("finishBtn").addEventListener("click",()=>{if(S.curTask)finishTask("abandoned");log("survey",{accept:document.getElementById("accept").value,wtp:document.getElementById("wtp").value,quote:document.getElementById("quote").value,label:"опитування"});log("session_end",{label:S.p});document.getElementById("sessStatus").firstChild.textContent="Сесію "+S.p+" завершено. Запис подій: ";["accept","wtp","quote"].forEach(i=>document.getElementById(i).value="")});
+render();
+})();
+</script>
+
+</body>
+</html>
